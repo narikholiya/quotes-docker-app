@@ -1,46 +1,99 @@
-from flask import Flask, render_template_string
-import random
-from rich.console import Console
-from rich.text import Text
+# app.py
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 
-console = Console()
+app = FastAPI()
 
-quotes = [
-    "The best way to get started is to quit talking and begin doing.",
-    "Don’t let yesterday take up too much of today.",
-    "It’s not whether you get knocked down, it’s whether you get up.",
-    "If you are working on something exciting, it will keep you motivated."
+# Quotes list
+QUOTES = [
+    "Believe you can and you're halfway there.",
+    "Do what you can, with what you have, where you are.",
+    "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+    "Happiness depends upon ourselves.",
+    "Don't watch the clock; do what it does. Keep going.",
 ]
 
-signature = "✨ Crafted with ❤️ by Narendra Singh Kholiya ✨"
+CREATOR = "✨ Project created by Narendra Singh Kholiya ✨"
 
-app = Flask(__name__)
 
-HTML = """
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Quotes App</title>
-    <style>
-      body { font-family: Arial, sans-serif; text-align: center; margin-top: 10%; background: #f8f9fa; }
-      .quote { font-size: 1.5rem; color: #333; }
-      .author { margin-top: 1rem; color: #8e44ad; font-weight: bold; }
-    </style>
-  </head>
-  <body>
-    <h1 class="quote">{{ quote }}</h1>
-    <p class="author">{{ signature }}</p>
-  </body>
-</html>
-"""
+def build_html():
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Animated Quotes</title>
+        <style>
+            body {{
+                background: linear-gradient(120deg, #84fab0, #8fd3f4);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                margin: 0;
+            }}
+            .container {{
+                text-align: center;
+                background: rgba(255,255,255,0.85);
+                padding: 40px;
+                border-radius: 20px;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+                max-width: 600px;
+                width: 80%;
+            }}
+            #quote {{
+                font-size: 1.6rem;
+                font-weight: 600;
+                min-height: 90px;
+            }}
+            .author {{
+                margin-top: 25px;
+                font-size: 1rem;
+                color: #444;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div id="quote"></div>
+            <div class="author">{CREATOR}</div>
+        </div>
+        <script>
+            const quotes = {QUOTES};
+            const el = document.getElementById('quote');
+            let index = 0;
 
-@app.route("/")
+            function getRandomColor() {{
+                const colors = ['#ff6b6b','#6bcdfc','#ffd93d','#6bffb3','#b36bff'];
+                return colors[Math.floor(Math.random()*colors.length)];
+            }}
+
+            function typeWriter(text, i, fnCallback) {{
+                if (i < text.length) {{
+                    el.innerHTML = text.substring(0, i+1) + '<span style="opacity:0;">|</span>';
+                    setTimeout(() => typeWriter(text, i + 1, fnCallback), 50);
+                }} else if (typeof fnCallback === 'function') {{
+                    setTimeout(fnCallback, 2000);
+                }}
+            }}
+
+            function startAnimation() {{
+                const quote = quotes[index];
+                el.style.color = getRandomColor();
+                typeWriter(quote, 0, () => {{
+                    index = (index + 1) % quotes.length;
+                    setTimeout(startAnimation, 1000);
+                }});
+            }}
+
+            startAnimation();
+        </script>
+    </body>
+    </html>
+    """
+
+
+@app.get("/", response_class=HTMLResponse)
 def home():
-    q = random.choice(quotes)
-    console.print(f"[bold cyan]Serving quote:[/] {q}")
-    return render_template_string(HTML, quote=q, signature=signature)
-
-if __name__ == "__main__":
-    # Bind to 0.0.0.0 so it’s accessible from outside the container
-    app.run(host="0.0.0.0", port=8080, debug=False)
+    return build_html()

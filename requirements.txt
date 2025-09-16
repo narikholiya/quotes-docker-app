@@ -1,2 +1,2 @@
-rich
-flask
+fastapi
+uvicorn[standard]
