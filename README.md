@@ -1,4 +1,4 @@
-# ✨ Quotes App – Animated Version
+# ✨ Quotes App 
 _A simple & beautiful web app that shows motivational quotes with smooth animations._
 
 > **Crafted with ❤️ by Narendra Singh Kholiya**
